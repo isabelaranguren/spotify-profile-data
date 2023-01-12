@@ -1,5 +1,4 @@
 import axios from "axios";
-
 // Map for localStorage keys
 const LOCALSTORAGE_KEYS = {
   accessToken: "spotify_access_token",
@@ -60,7 +59,6 @@ const refreshToken = async () => {
     console.error(e);
   }
 };
-
 /**
  * Handles logic for retrieving the Spotify access token from localStorage
  * or URL query params
@@ -104,12 +102,15 @@ const getAccessToken = () => {
   return false;
 };
 
+
 export const accessToken = getAccessToken();
 
-/**
- * Clear out all localStorage items we've set and reload the page
- * @returns {void}
- */
+axios.defaults.baseURL = "https://api.spotify.com/v1";
+axios.defaults.headers["Authorization"] = `Bearer ${accessToken}`;
+axios.defaults.headers["Content-Type"] = "application/json";
+
+export const getCurrentUserProfile = () => axios.get('/me');
+
 export const logout = () => {
   // Clear all localStorage items
   for (const property in LOCALSTORAGE_KEYS) {
@@ -117,4 +118,23 @@ export const logout = () => {
   }
   // Navigate to homepage
   window.location = window.location.origin;
+};
+
+/**
+ * Get a List of Current User's Playlists
+ * https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-a-list-of-current-users-playlists
+ * @returns {Promise}
+ */
+export const getCurrentUserPlaylists = (limit = 20) => {
+  return axios.get(`/me/playlists?limit=${limit}`);
+};
+
+/**
+ * Get a User's Top Artists and Tracks
+ * https://developer.spotify.com/documentation/web-api/reference/#endpoint-get-users-top-artists-and-tracks
+ * @param {string} time_range - 'short_term' (last 4 weeks) 'medium_term' (last 6 months) or 'long_term' (calculated from several years of data and including all new data as it becomes available). Defaults to 'short_term'
+ * @returns {Promise}
+ */
+export const getTopArtists = (time_range = 'short_term') => {
+  return axios.get(`/me/top/artists?time_range=${time_range}`);
 };
